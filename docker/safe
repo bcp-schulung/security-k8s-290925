@@ -1,0 +1,20 @@
+FROM nginx:1.25.3-alpine
+
+LABEL maintainer="secure@example.com" \
+      description="Hardened Nginx container with security best practices"
+
+# Update Systempakete und entferne Cache
+RUN apk --no-cache upgrade && \
+    rm -rf /var/cache/apk/*
+
+# Rechte anpassen (Standard-User ist schon 'nginx')
+RUN chown -R nginx:nginx /var/cache/nginx /var/run /var/log/nginx /etc/nginx
+
+# Wechsel zu non-root User (bereits vorhanden im Base Image)
+USER nginx
+
+EXPOSE 8080
+
+STOPSIGNAL SIGQUIT
+
+CMD ["nginx", "-g", "daemon off;"]

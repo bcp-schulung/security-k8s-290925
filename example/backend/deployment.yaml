@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: backend
-        image: your-dockerhub-user/backend:latest
+        image: harbor.bencoepp.de/goldfish/backend:1.2
         imagePullPolicy: Always
         imagePullSecrets:
         - name: harbor-registry

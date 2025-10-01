@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: your-dockerhub-user/frontend:latest
+        image: harbor.bencoepp.de/goldfish/frontend:1.2
         imagePullPolicy: Always
         imagePullSecrets:
         - name: harbor-registry

@@ -20,6 +20,11 @@ spec:
       - name: backend
         image: harbor.bencoepp.de/goldfish/backend:1.2
         imagePullPolicy: Always
+        securityContext:
+          runAsUser: 1000
+          runAsGroup: 1000
+          runAsNonRoot: true
+          readOnlyRootFilesystem: true
         ports:
         - containerPort: 3000
         env:

@@ -19,11 +19,11 @@ USER nodeuser
 ENV NODE_ENV=production
 
 # Expose only needed port
-EXPOSE 80
+EXPOSE 3000
 
 # Optional: Healthcheck (ensure you have a /health route or adjust accordingly)
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD wget --quiet --tries=1 --spider http://localhost:80/health || exit 1
+  CMD wget --quiet --tries=1 --spider http://localhost:3000/health || exit 1
 
 # Start app
 CMD ["npm", "start"]

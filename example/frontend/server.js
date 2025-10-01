@@ -2,7 +2,7 @@ const express = require("express");
 const axios = require("axios");
 
 const app = express();
-const PORT = process.env.PORT || 80;
+const PORT = process.env.PORT || 3000;
 
 // Backend URL (from env variable or default to service name in K8s)
 const BACKEND_URL = process.env.BACKEND_URL || "http://backend:3000";

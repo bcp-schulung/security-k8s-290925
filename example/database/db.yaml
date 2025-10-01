@@ -1,0 +1,23 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: database
+spec:
+  imageName: ghcr.io/cloudnative-pg/postgresql:15.4
+  instances: 1
+  storage:
+    size: 1Gi
+  bootstrap:
+    initdb:
+      database: mydatabase
+      owner: myuser
+      secret:
+        name: database-secret
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: database-secret
+stringData:
+  username: myuser
+  password: mypassword

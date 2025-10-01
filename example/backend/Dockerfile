@@ -6,11 +6,8 @@ RUN addgroup -S nodejs && adduser -S nodeuser -G nodejs
 
 WORKDIR /app
 
-# Copy only package files first (better caching)
 COPY package*.json ./
-
-# Install dependencies in production mode with frozen lockfile
-RUN npm ci --only=production && npm cache clean --force
+RUN npm install --omit=dev && npm cache clean --force
 
 # Copy source code
 COPY . .

@@ -14,12 +14,12 @@ spec:
       labels:
         app: backend
     spec:
+      imagePullSecrets:
+      - name: harbor-registry
       containers:
       - name: backend
         image: harbor.bencoepp.de/goldfish/backend:1.2
         imagePullPolicy: Always
-        imagePullSecrets:
-        - name: harbor-registry
         ports:
         - containerPort: 3000
         env:

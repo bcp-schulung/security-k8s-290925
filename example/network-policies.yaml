@@ -9,6 +9,7 @@ spec:
   - Ingress
   - Egress
 ---
+# Frontend: Allow ingress from anywhere, egress only to backend + DNS
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -23,13 +24,141 @@ spec:
   - Egress
   ingress:
   - from:
-    - podSelector: {}
+    - podSelector: {}   # allow any pod in namespace to reach frontend
     ports:
     - protocol: TCP
       port: 3000
   egress:
+  # frontend → backend
   - to:
-    - podSelector: {}
+    - podSelector:
+        matchLabels:
+          app: backend
     ports:
     - protocol: TCP
       port: 3000
+  # frontend → DNS
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+      podSelector:
+        matchLabels:
+          k8s-app: kube-dns
+    ports:
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 53
+---
+# Backend: Allow ingress only from frontend
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: backend-allow-only-frontend
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      app: backend
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: frontend
+    ports:
+    - protocol: TCP
+      port: 3000
+---
+# Backend: Egress only to frontend, database, and DNS
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: backend-egress-frontend-db
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      app: backend
+  policyTypes:
+  - Egress
+  egress:
+  # backend → frontend
+  - to:
+    - podSelector:
+        matchLabels:
+          app: frontend
+    ports:
+    - protocol: TCP
+      port: 3000
+  # backend → database
+  - to:
+    - podSelector:
+        matchLabels:
+          cnpg.io/cluster: database
+    ports:
+    - protocol: TCP
+      port: 5432
+  # backend → DNS
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+      podSelector:
+        matchLabels:
+          k8s-app: kube-dns
+    ports:
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 53
+---
+# Database: Allow ingress only from backend
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: database-allow-backend
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      cnpg.io/cluster: database
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: backend
+    ports:
+    - protocol: TCP
+      port: 5432
+---
+# Database: Deny all egress, except DNS (needed for some operators/extensions)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: database-deny-egress
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      cnpg.io/cluster: database
+  policyTypes:
+  - Egress
+  egress:
+  # database → DNS
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+      podSelector:
+        matchLabels:
+          k8s-app: kube-dns
+    ports:
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 53
